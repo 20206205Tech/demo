@@ -7,17 +7,10 @@ from loguru import logger
 
 
 def main():
-    logger.info(f"Đang tiến hành cập nhật Payment Provider thành: {env.PROVIDER}")
+    provider = env.PROVIDER
+    logger.info(f"Đang tiến hành cập nhật Payment Provider thành: {provider}")
 
     url = "https://api.doppler.com/v3/configs/config/secrets"
-
-    payload = json.dumps(
-        {
-            "project": "20206205tech",
-            "config": "prod",
-            "secrets": {"PAYMENT_DEFAULT_PROVIDER": env.PROVIDER},
-        }
-    )
 
     headers = {
         "accept": "application/json",
@@ -25,19 +18,44 @@ def main():
         "authorization": f"Bearer {env.DOPPLER_TOKEN}",
     }
 
-    try:
-        response = requests.request("POST", url, headers=headers, data=payload)
+    # Danh sách các môi trường cần cập nhật
+    configs_to_update = ["dev", "prod"]
+    has_error = False
 
-        # Kiểm tra HTTP status thay vì in toàn bộ response
-        if response.status_code == 200:
-            logger.success(f"Cập nhật cấu hình PAYMENT_DEFAULT_PROVIDER thành công!")
-        else:
-            logger.error(f"Lỗi cập nhật. Mã HTTP: {response.status_code}")
-            sys.exit(1)
+    for config_name in configs_to_update:
+        logger.info(f"Đang xử lý môi trường: {config_name}...")
 
-    except Exception as e:
-        logger.error(f"Call API thất bại: {e}")
+        payload = json.dumps(
+            {
+                "project": "20206205tech",
+                "config": config_name,
+                "secrets": {"PAYMENT_DEFAULT_PROVIDER": provider},
+            }
+        )
+
+        try:
+            response = requests.request("POST", url, headers=headers, data=payload)
+
+            if response.status_code == 200:
+                logger.success(f"[{config_name}] Cập nhật cấu hình thành công!")
+            else:
+                logger.error(
+                    f"[{config_name}] Lỗi cập nhật. Mã HTTP: {response.status_code} - {response.text}"
+                )
+                has_error = True
+
+        except Exception as e:
+            logger.error(f"[{config_name}] Call API thất bại: {e}")
+            has_error = True
+
+    # Nếu có bất kỳ môi trường nào bị lỗi, thoát với code 1 để các pipeline CI/CD (nếu có) có thể catch được
+    if has_error:
+        logger.error(
+            "Quá trình cập nhật hoàn tất nhưng có lỗi xảy ra. Vui lòng kiểm tra log ở trên."
+        )
         sys.exit(1)
+    else:
+        logger.success("Đã cập nhật thành công toàn bộ các môi trường!")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,47 @@
+name: demo-payment-ddd
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: 'Chọn cổng thanh toán mặc định (PAYMENT_DEFAULT_PROVIDER)'
+        required: true
+        type: choice
+        options:
+          - vnpay
+          - momo
+          - zalopay
+          - sepay
+
+jobs:
+  demo-payment-ddd:
+    runs-on: ubuntu-latest
+
+
+    defaults:
+      run:
+        working-directory: ./demo-payment-ddd
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: demo-payment-ddd
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+          PROVIDER: ${{ inputs.provider }}
+        run: uv run python main.py

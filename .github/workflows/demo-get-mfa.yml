@@ -43,9 +43,8 @@ jobs:
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v3
 
-      - name: Run demo-get-mfa with Doppler
+      - name: demo-get-mfa
         env:
           EMAIL: ${{ inputs.email }}
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-        # Truyền trực tiếp project và config vào lệnh doppler run, không cần setup riêng
         run: doppler run --project 20206205tech --config ${{ inputs.env }} -- uv run python main.py

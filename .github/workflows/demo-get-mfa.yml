@@ -1,0 +1,51 @@
+name: demo-get-mfa
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'Email cần lấy mã MFA'
+        required: true
+        type: string
+      env:
+        description: 'Chọn môi trường'
+        required: true
+        type: choice
+        options:
+          - prod
+          - dev
+
+jobs:
+  demo-get-mfa:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./demo-get-mfa
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - name: Run demo-get-mfa with Doppler
+        env:
+          EMAIL: ${{ inputs.email }}
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        # Truyền trực tiếp project và config vào lệnh doppler run, không cần setup riêng
+        run: doppler run --project 20206205tech --config ${{ inputs.env }} -- uv run python main.py

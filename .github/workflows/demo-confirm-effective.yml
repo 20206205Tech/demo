@@ -3,10 +3,6 @@ name: demo-confirm-effective
 on:
   workflow_dispatch:
 
-
-
-
-
 jobs:
   demo-confirm-effective:
     runs-on: ubuntu-latest
@@ -36,4 +32,6 @@ jobs:
         uses: dopplerhq/cli-action@v3
 
       - name: demo-confirm-effective
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
         run: doppler run --project 20206205tech --config prod -- uv run python main.py

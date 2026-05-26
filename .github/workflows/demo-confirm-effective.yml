@@ -1,0 +1,39 @@
+name: demo-confirm-effective
+
+on:
+  workflow_dispatch:
+
+
+
+
+
+jobs:
+  demo-confirm-effective:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./demo-confirm-effective
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - name: demo-confirm-effective
+        run: doppler run --project 20206205tech --config prod -- uv run python main.py

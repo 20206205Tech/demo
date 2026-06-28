@@ -1,0 +1,48 @@
+name: demo-request-hundred
+
+on:
+  workflow_dispatch:
+    inputs:
+      token:
+        description: 'Token truy cập API (Bearer Token)'
+        required: true
+        type: string
+
+jobs:
+  demo-request-hundred:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./demo-request-hundred
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run RAG Evaluation
+        env:
+          TOKEN: ${{ inputs.token }}
+        run: uv run python main.py
+
+      - name: Upload Results and Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-evaluation-artifact
+          path: |
+            demo-request-hundred/result.json
+            demo-request-hundred/logs/
